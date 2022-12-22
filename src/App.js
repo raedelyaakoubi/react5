@@ -1,24 +1,78 @@
-import logo from './logo.svg';
-import './App.css';
-
+import "./App.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import data from "./data";
+import MovieList from "./MovieList/MovieList";
+import Filter from "./Filter/Filter";
+import ModalAdd from "./ModalAdd/ModalAdd";
+import { useState } from "react";
+import { Route, Routes } from "react-router-dom";
+import Details from "./Details/Details";
 function App() {
+  const [newData, setNewData] = useState(data);
+  const [sort, setSort] = useState(0);
+  const [search, setSearch] = useState("");
+  const changeRate = (id, e) => {
+    setNewData(newData.map((el) => (el.id !== id ? el : { ...el, rating: e })));
+  };
+  const remove = (e) => {
+    setNewData(newData.filter((el) => el.id !== e));
+  };
+  const add = (title, description, posterUrl, trailerSrc) => {
+    setNewData([
+      ...newData,
+      {
+        id: newData.length,
+        title,
+        description,
+        posterUrl,
+        rating: 0,
+        trailerSrc,
+      },
+    ]);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <div
+              className="container rounded-3 bgblack py-1 my-3"
+              style={{ width: "80%" }}
+            >
+              <Filter
+                setSort={setSort}
+                search={setSearch}
+              />
+
+              <MovieList
+                data={newData
+                  .filter((el) => (sort ? el.rating === sort : newData))
+                  .filter((el) =>
+                    search
+                      ? el.title
+                          .toLocaleLowerCase()
+                          .includes(search.toLocaleLowerCase().trim())
+                      : newData
+                  )}
+                changeRate={changeRate}
+                remove={remove}
+              />
+            </div>
+          }
+        />
+        <Route path="/details/:id" element={<Details data={newData} />} />
+        <Route
+          path="/ModalAdd"
+          element={
+            <ModalAdd
+              add={add}
+            />
+          }
+        />
+      </Routes>
+    </>
   );
 }
 
